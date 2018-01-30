@@ -1,0 +1,5 @@
+mutation SubmitLink($url: String!) {
+    submitLink(url: $url) {
+      _id
+    }
+}

@@ -1,0 +1,21 @@
+query NotesQuery($limit: Int) {
+    notes(limit: $limit) {
+      ... on INote {
+        type
+        _id
+        name
+        createdAt
+        archivedAt
+        description
+        tags {
+          _id
+          name
+          color
+        }
+      }
+      ... on Link {
+        url
+        domain
+      }
+    }
+}

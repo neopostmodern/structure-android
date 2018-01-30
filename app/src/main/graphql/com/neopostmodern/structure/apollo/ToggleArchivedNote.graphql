@@ -1,0 +1,8 @@
+mutation ToggleArchivedNote($noteId: ID!) {
+    toggleArchivedNote(noteId: $noteId) {
+        ... on INote {
+            _id
+            archivedAt
+	}
+    }
+}
