@@ -21,6 +21,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ProgressBar;
+import android.widget.Toast;
 
 import com.apollographql.apollo.ApolloCall;
 import com.apollographql.apollo.ApolloCallback;
@@ -65,6 +66,15 @@ public class MainActivity extends AppCompatActivity {
 
         application = (StructureApplication) getApplication();
 
+        Intent intent = getIntent();
+        String action = intent.getAction();
+        String type = intent.getType();
+
+        if (Intent.ACTION_SEND.equals(action) && type != null) {
+            Log.i(TAG, "Queue URL: " + intent.getStringExtra(Intent.EXTRA_TEXT));
+            application.queueUrlToAdd(intent.getStringExtra(Intent.EXTRA_TEXT));
+        }
+
         toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
@@ -96,18 +106,17 @@ public class MainActivity extends AppCompatActivity {
 
 
         if (!application.isAuthenticated()) {
-            Intent intent = new Intent(this, LoginActivity.class);
-            startActivity(intent);
+            Log.i(TAG, "Will authenticate");
+            Intent loginIntent = new Intent(this, LoginActivity.class);
+            startActivity(loginIntent);
         } else {
             this.fetchNotes();
-        }
 
-        Intent intent = getIntent();
-        String action = intent.getAction();
-        String type = intent.getType();
-
-        if (Intent.ACTION_SEND.equals(action) && type != null) {
-            addUrl(intent.getStringExtra(Intent.EXTRA_TEXT));
+            String urlToAdd = application.popUrlToAdd();
+            Log.i(TAG, "Popped URL: " + urlToAdd);
+            if (urlToAdd != null) {
+                addUrl(urlToAdd);
+            }
         }
 
         swipeRefreshLayout = findViewById(R.id.swipe_refresh_layout);
@@ -259,7 +268,13 @@ public class MainActivity extends AppCompatActivity {
         SubmitLinkMutation submitLink = SubmitLinkMutation.builder().url(url).build();
         application.apolloClient()
                 .mutate(submitLink)
-                .enqueue(this.<SubmitLinkMutation.Data>apolloCallbackFactory());
+                .enqueue(this.<SubmitLinkMutation.Data>apolloCallbackFactory(new LimitedApolloCallback<SubmitLinkMutation.Data>() {
+                    @Override
+                    public void onSuccess(Response<SubmitLinkMutation.Data> response) {
+                        Toast.makeText(getApplicationContext(), "URL has been added to Structure!",
+                                Toast.LENGTH_LONG).show();
+                    }
+                }));
     }
 
     private void toggleArchived(final int position) {

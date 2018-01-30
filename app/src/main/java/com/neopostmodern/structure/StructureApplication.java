@@ -36,6 +36,8 @@ public class StructureApplication extends Application {
     private ApolloClient apolloClient;
     private String authCookie = "";
 
+    private String urlToAdd = null;
+
     @Override public void onCreate() {
         super.onCreate();
 
@@ -110,5 +112,13 @@ public class StructureApplication extends Application {
     }
     public boolean isAuthenticated() {
         return this.authCookie.length() > 0;
+    }
+    public void queueUrlToAdd(String url) {
+        urlToAdd = url;
+    }
+    public String popUrlToAdd() {
+        String url = urlToAdd;
+        urlToAdd = null;
+        return url;
     }
 }
